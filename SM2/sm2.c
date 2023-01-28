@@ -39,6 +39,8 @@ struct FPECC Ecc256={
 void PrintBuf(unsigned char *buf, int	buflen)
 {
 	int i;
+	printf("\r\n");
+	printf("len = %d\r\n", buflen);
 	for(i=0; i<buflen; i++) {
   	if (i % 32 != 31)
   	  printf("%02x", buf[i]);
