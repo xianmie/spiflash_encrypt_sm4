@@ -6,7 +6,7 @@
 #include "stdint.h"
  
 struct text{	unsigned char *content;
-			uint16_t len;};
+				uint16_t len;};
 typedef struct text TEXT;
 void PrintBuf(unsigned char *buf, int buflen);
 void Printch(unsigned char *buf, int buflen);

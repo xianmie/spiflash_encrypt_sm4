@@ -23,7 +23,8 @@
 	u8 key;
 	u32 FLASH_SIZE; 
     u16 id = 0;
-	TEXT tx;
+	TEXT plain;//明文
+	TEXT cipher;//密文
 	TEXT datatemp;
      
 	delay_init();	    	 //延时函数初始化	  
@@ -57,23 +58,27 @@
 			{
 				if(USART_RX_STA&0x8000)
 				{
-					tx.len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
-					tx.content=USART_RX_BUF;	
-					PrintBuf(tx.content, tx.len);							
+					plain.len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
+					plain.content=USART_RX_BUF;
+					PrintBuf(plain.content, plain.len);							
 					USART_RX_STA=0;
 					break;
 				}
 			}
-			  
-			W25QXX_Write((u8*)tx.content,0,tx.len);			//从倒数第100个地址处开始,写入SIZE长度的数据
+			cipher.len=plain.len;
+			for(u16 i=0;i<plain.len;i+=16)
+			{
+				sm4_encrypt_cbc(plain.content+i,cipher.content+i);
+			} 
+			W25QXX_Write((u8*)cipher.content,0,cipher.len);			//从倒数第100个地址处开始,写入SIZE长度的数据
 			printf("W25Q128 Write Finished!\r\n");	//提示传送完成
 		}
 		if(key==KEY0_PRES)	//KEY0按下,读取字符串并显示
 		{
  			printf("Start Read W25Q128.... \r\n");
-			W25QXX_Read(datatemp.content,0,tx.len);					//从倒数第100个地址处开始,读出SIZE个字节			
+			W25QXX_Read(datatemp.content,0,cipher.len);					//从倒数第100个地址处开始,读出SIZE个字节			
 			printf("The Data Readed Is:  ");	//提示传送完成
-			PrintBuf(datatemp.content,tx.len);
+			PrintBuf(datatemp.content,cipher.len);
 		}	   
 	}
 }

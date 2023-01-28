@@ -335,7 +335,7 @@ void sm4_crypt_cbc_old( sm4_context *ctx,
             input[i] = (unsigned char)( input[i] ^ iv[i] );
 
             sm4_one_round( ctx->sk, input, output );
-//			memcpy( iv, output, 16 );//当加密端和解密端不在同一应用是应去掉注释
+			memcpy( iv, output, 16 );//当加密端和解密端不在同一应用是应去掉注释
             input  += 16;
             output += 16;
             length -= 16;
@@ -392,7 +392,6 @@ void sm4_crypt_ecb( sm4_context *ctx, int mode, unsigned int *length, \
 		
 		/* 加密 */
 		sm4_crypt_ecb_old(ctx, mode, *length, input, output);
-		
 	}
 	else //SM4_DECRYPT
 	{
@@ -518,4 +517,65 @@ int sm4_test_cbc(TEXT *tx)
 	PrintBuf(rX, 16);
 	return 0;
 	
+}
+int sm4_encrypt_ecb(unsigned char *txcontent,unsigned char *rxcontent)
+{	
+	printf("\r\n***************** SM4_encrypt_ECB *****************\r\n");
+	unsigned char key[16];
+	unsigned char input[16];
+	sm4_context context;
+	sm4_context* ctx=&context;
+	unsigned long RK[32];//轮密钥
+	unsigned int len=16;
+	unsigned int *length=&len;//明文长度
+	int i;	
+	for(u8 i=0;i<16;i++)
+		input[i]=txcontent[i];
+	printf("明文："); 
+	PrintBuf(txcontent, 16);
+	gen_key(key);
+	printf("密钥："); 
+	PrintBuf(key, 16);
+	printf("`````````````````` RK key ``````````````````\r\n"); 
+	sm4_setkey_enc(ctx,key);
+	for(i = 0; i < 32; i++) {
+		RK[i]=ctx->sk[i];
+		printf("[%2d]：%x  ", i, RK[i]);
+		if(i%4 == 3)	printf("\r\n"); 
+	}	
+	printf("\n`````````````````` Ciphertext ``````````````````\r\n"); 
+	sm4_crypt_ecb(ctx,ctx->mode,length,input,rxcontent);
+	PrintBuf(rxcontent, 16);
+	return 0;
+}
+int sm4_encrypt_cbc(unsigned char *txcontent,unsigned char *rxcontent)
+{	
+	printf("\r\n***************** SM4_encrypt_CBC *****************\r\n");
+	unsigned char key[16];
+	unsigned char input[16];
+	unsigned char iv[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; 
+	sm4_context context;
+	sm4_context* ctx=&context;
+	unsigned long RK[32];//轮密钥
+	unsigned int len=16;
+	unsigned int *length=&len;//明文长度
+	int i;	
+	for(u8 i=0;i<16;i++)
+		input[i]=txcontent[i];
+	printf("明文："); 
+	PrintBuf(txcontent, 16);
+	gen_key(key);
+	printf("密钥："); 
+	PrintBuf(key, 16);
+	printf("`````````````````` RK key ``````````````````\r\n"); 
+	sm4_setkey_enc(ctx,key);
+	for(i = 0; i < 32; i++) {
+		RK[i]=ctx->sk[i];
+		printf("[%2d]：%x  ", i, RK[i]);
+		if(i%4 == 3)	printf("\r\n"); 
+	}	
+	printf("\n`````````````````` Ciphertext ``````````````````\r\n"); 
+	sm4_crypt_cbc( ctx, ctx->mode,length, iv,input, rxcontent );
+	PrintBuf(rxcontent, 16);
+	return 0;
 }
