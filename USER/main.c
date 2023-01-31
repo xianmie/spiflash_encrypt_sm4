@@ -4,7 +4,7 @@
 #include "usart.h"	 
 #include "w25qxx.h"	 
 #include "sm2.h"
- 
+#include "sm4.h" 
 /************************************************
  ALIENTEK战舰STM32开发板实验24
  SPI 实验   
@@ -17,22 +17,26 @@
 
  				 	
 //要写入到W25Q64的字符串数组
-
+#define ONE_LEN 4096 
  int main(void)
  {	 
 	u8 key;
 	u32 FLASH_SIZE; 
     u16 id = 0;
-	TEXT plain;//明文
-	TEXT cipher;//密文
-	TEXT datatemp;
+	TEXT plaintemp;//明文
+
+	unsigned char sm4key[16];
+	unsigned char plain[ONE_LEN];
+	unsigned char cipher[ONE_LEN];
+	unsigned char datatemp[ONE_LEN];
+	unsigned char outplain[ONE_LEN];
      
 	delay_init();	    	 //延时函数初始化	  
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置中断优先级分组为组2：2位抢占优先级，2位响应优先级
 	uart_init(115200);	 	//串口初始化为115200
 	KEY_Init();				//按键初始化		 	 	
 	W25QXX_Init();			//W25QXX初始化
-
+	delay_ms(500);
 
 	while(1)
 	{
@@ -58,29 +62,32 @@
 			{
 				if(USART_RX_STA&0x8000)
 				{
-					plain.len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
-					plain.content=USART_RX_BUF;
-					PrintBuf(plain.content, plain.len);							
+					plaintemp.len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
+					plaintemp.content=USART_RX_BUF;
+//					PrintBuf(plaintemp.content, plaintemp.len);							
 					USART_RX_STA=0;
 					break;
 				}
 			}
-			cipher.len=plain.len;
-			for(u16 i=0;i<plain.len;i+=16)
+			for(u16 i=0;i<ONE_LEN;i++)
 			{
-				sm4_encrypt_cbc(plain.content+i,cipher.content+i);
-			} 
-			W25QXX_Write((u8*)cipher.content,0,cipher.len);			//从倒数第100个地址处开始,写入SIZE长度的数据
+				plain[i]=*(plaintemp.content+i);
+			}
+			sm4_encrypt_cbc(sm4key,plain,cipher);
+//			printf("The Data encrypted Is:  ");	
+//			PrintBuf(cipher,ONE_LEN);			
+			W25QXX_Write((u8*)cipher,0,ONE_LEN);			//从倒数第100个地址处开始,写入SIZE长度的数据
 			printf("W25Q128 Write Finished!\r\n");	//提示传送完成
 		}
 		if(key==KEY0_PRES)	//KEY0按下,读取字符串并显示
 		{
  			printf("Start Read W25Q128.... \r\n");
-			W25QXX_Read(datatemp.content,0,cipher.len);					//从倒数第100个地址处开始,读出SIZE个字节			
-			printf("The Data Readed Is:  ");	//提示传送完成
-			PrintBuf(datatemp.content,cipher.len);
+			W25QXX_Read(datatemp,0,ONE_LEN);					//从倒数第100个地址处开始,读出SIZE个字节			
+//			printf("The Data Readed Is:  ");	//提示传送完成
+//			PrintBuf(datatemp,ONE_LEN);
+			sm4_decrypt_cbc(sm4key,datatemp,outplain);
+			printf("The Data After Decrypt Is:  ");	//提示传送完成
+			PrintBuf(outplain,ONE_LEN);			
 		}	   
 	}
 }
-
-

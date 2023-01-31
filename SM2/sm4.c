@@ -50,6 +50,7 @@
 /*
  * 32-bit integer manipulation macros (big endian)
  */
+#define ONE_LEN 4096
 #ifndef GET_ULONG_BE
 #define GET_ULONG_BE(n,b,i)                             \
 {                                                       \
@@ -304,7 +305,7 @@ void sm4_crypt_ecb_old( sm4_context *ctx,
 				   unsigned char *input,
            unsigned char *output)
 {
-    while( length > 16 )
+    while( length > 0 )
     {
         sm4_one_round( ctx->sk, input, output );
         input  += 16;
@@ -329,7 +330,7 @@ void sm4_crypt_cbc_old( sm4_context *ctx,
 
     if( mode == SM4_ENCRYPT )
     {
-        while( length > 16 )
+        while( length > 0 )
         {
             for( i = 0; i < 16; i++ )
             input[i] = (unsigned char)( input[i] ^ iv[i] );
@@ -343,7 +344,7 @@ void sm4_crypt_cbc_old( sm4_context *ctx,
     }
     else /* SM4_DECRYPT */
     {
-        while( length > 16 )
+        while( length > 0 )
         {
             memcpy( temp, input, 16 );
             sm4_one_round( ctx->sk, input, output );
@@ -386,12 +387,15 @@ void sm4_crypt_ecb( sm4_context *ctx, int mode, unsigned int *length, \
 	{	
 		padding_value = 16 - (*length % 16);
 		/* 填充 */
-		memset(input + *length, padding_value, padding_value);
-		/* 填充后长度 */
-		*length += padding_value;
-		
+		if(padding_value!=16)
+		{
+			memset(input + *length, padding_value, padding_value);
+			/* 填充后长度 */
+			*length += padding_value;
+		}
 		/* 加密 */
 		sm4_crypt_ecb_old(ctx, mode, *length, input, output);
+		
 	}
 	else //SM4_DECRYPT
 	{
@@ -428,9 +432,12 @@ void sm4_crypt_cbc( sm4_context *ctx, int mode, unsigned int *length, unsigned c
 	{
 		padding_value = 16 - (*length % 16);
 		
-		/* 填充 */
-		memset(input + *length, padding_value, padding_value);
-		*length += padding_value;
+		if(padding_value!=16)
+		{
+			memset(input + *length, padding_value, padding_value);
+			/* 填充后长度 */
+			*length += padding_value;
+		}
 
 		sm4_crypt_cbc_old(ctx, mode, *length, iv, input, output);
 	}
@@ -441,22 +448,22 @@ void sm4_crypt_cbc( sm4_context *ctx, int mode, unsigned int *length, unsigned c
 		*length -= output[*length - 1];
 	}
 }
-  
+
 int sm4_test_ecb(TEXT *tx)
 {	
 	printf("\r\n***************** SM4_ECB *****************\r\n");
 //	unsigned char key[16]={0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10}; // 密钥 
 	unsigned char key[16];
-    unsigned char Y[16]; // 密文 
-	unsigned char rX[16]; // 解密出的明文 
+    unsigned char Y[ONE_LEN]; // 密文 
+	unsigned char rX[ONE_LEN]; // 解密出的明文 
 	sm4_context context;
 	sm4_context* ctx=&context;
 	unsigned long RK[32];//轮密钥
-	unsigned int len=16;
+	unsigned int len=ONE_LEN;
 	unsigned int *length=&len;//明文长度
 	int i;	
 	printf("明文："); 
-	PrintBuf(tx->content, 16);
+	PrintBuf(tx->content, ONE_LEN);
 	gen_key(key);
 	printf("密钥："); 
 	PrintBuf(key, 16);
@@ -471,11 +478,11 @@ int sm4_test_ecb(TEXT *tx)
 	printf("\n`````````````````` Ciphertext ``````````````````\r\n"); 
 	sm4_crypt_ecb(ctx,ctx->mode,length,tx->content,Y);
 	
-	PrintBuf(Y, 16);
+	PrintBuf(Y, ONE_LEN);
 	printf("\r\n`````````````````` After Decrypt ``````````````````\r\n");  
 	sm4_setkey_dec(ctx,key);
 	sm4_crypt_ecb(ctx,ctx->mode,length,Y,rX);
-	PrintBuf(rX, 16);
+	PrintBuf(rX, ONE_LEN);
 	return 0;
 }
 
@@ -484,55 +491,31 @@ int sm4_test_cbc(TEXT *tx)
     printf("\r\n***************** SM4_CBC *****************\r\n");	
 //	unsigned char key[16]={0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10}; // 密钥 
 	unsigned char key[16];
-    unsigned char iv[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; 
-    unsigned char Y[16]; // 密文 
-	unsigned char rX[16]; // 解密出的明文 
-	sm4_context context;
-	sm4_context* ctx=&context;
-	unsigned long RK[32];//轮密钥
-	unsigned int len=16;
-	unsigned int *length=&len;//明文长度
-	int i;
-	
-	printf("明文："); 
-	PrintBuf(tx->content, 16);
-	gen_key(key);
-	printf("密钥："); 
-	PrintBuf(key, 16);
-	printf("`````````````````` RK key ``````````````````\r\n"); 
-	sm4_setkey_enc(ctx,key);
+    unsigned char Y[ONE_LEN]; // 密文 
+	unsigned char rX[ONE_LEN]; // 解密出的明文 
 
-	for(i = 0; i < 32; i++) {
-		RK[i]=ctx->sk[i];
-		printf("[%2d]：%x  ", i, RK[i]);
-		if(i%4 == 3)	printf("\r\n"); 
-	}	
-	printf("\n`````````````````` Ciphertext ``````````````````\r\n"); 
-	sm4_crypt_cbc( ctx, ctx->mode,length, iv,tx->content, Y );
-	
-	PrintBuf(Y, 16);
-	printf("\r\n`````````````````` After Decrypt ``````````````````\r\n");  
-	sm4_setkey_dec(ctx,key);
-	sm4_crypt_cbc( ctx, ctx->mode,length, iv,Y, rX );
-	PrintBuf(rX, 16);
+	sm4_encrypt_cbc(key,tx->content,Y);
+
+	sm4_decrypt_cbc( key,Y, rX );
+
 	return 0;
 	
 }
-int sm4_encrypt_ecb(unsigned char *txcontent,unsigned char *rxcontent)
+
+int sm4_encrypt_ecb(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent)
 {	
 	printf("\r\n***************** SM4_encrypt_ECB *****************\r\n");
-	unsigned char key[16];
-	unsigned char input[16];
+	unsigned char input[ONE_LEN];
 	sm4_context context;
 	sm4_context* ctx=&context;
 	unsigned long RK[32];//轮密钥
-	unsigned int len=16;
+	unsigned int len=ONE_LEN;
 	unsigned int *length=&len;//明文长度
 	int i;	
-	for(u8 i=0;i<16;i++)
+	for(u8 i=0;i<ONE_LEN;i++)
 		input[i]=txcontent[i];
 	printf("明文："); 
-	PrintBuf(txcontent, 16);
+	PrintBuf(txcontent, ONE_LEN);
 	gen_key(key);
 	printf("密钥："); 
 	PrintBuf(key, 16);
@@ -545,37 +528,49 @@ int sm4_encrypt_ecb(unsigned char *txcontent,unsigned char *rxcontent)
 	}	
 	printf("\n`````````````````` Ciphertext ``````````````````\r\n"); 
 	sm4_crypt_ecb(ctx,ctx->mode,length,input,rxcontent);
-	PrintBuf(rxcontent, 16);
+	PrintBuf(rxcontent, ONE_LEN);
 	return 0;
 }
-int sm4_encrypt_cbc(unsigned char *txcontent,unsigned char *rxcontent)
+
+int sm4_encrypt_cbc(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent)
 {	
 	printf("\r\n***************** SM4_encrypt_CBC *****************\r\n");
-	unsigned char key[16];
-	unsigned char input[16];
+	unsigned char input[ONE_LEN];
 	unsigned char iv[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; 
 	sm4_context context;
 	sm4_context* ctx=&context;
 	unsigned long RK[32];//轮密钥
-	unsigned int len=16;
+	unsigned int len=ONE_LEN;
 	unsigned int *length=&len;//明文长度
-	int i;	
-	for(u8 i=0;i<16;i++)
+	
+	for(u16 i=0;i<ONE_LEN;i++)
 		input[i]=txcontent[i];
-	printf("明文："); 
-	PrintBuf(txcontent, 16);
+
 	gen_key(key);
-	printf("密钥："); 
-	PrintBuf(key, 16);
-	printf("`````````````````` RK key ``````````````````\r\n"); 
+
 	sm4_setkey_enc(ctx,key);
-	for(i = 0; i < 32; i++) {
-		RK[i]=ctx->sk[i];
-		printf("[%2d]：%x  ", i, RK[i]);
-		if(i%4 == 3)	printf("\r\n"); 
-	}	
-	printf("\n`````````````````` Ciphertext ``````````````````\r\n"); 
+	
 	sm4_crypt_cbc( ctx, ctx->mode,length, iv,input, rxcontent );
-	PrintBuf(rxcontent, 16);
+
 	return 0;
+}
+
+int sm4_decrypt_cbc(unsigned char *key,unsigned char *input,unsigned char *output)
+{
+    printf("\r\n***************** SM4_CBC *****************\r\n");	
+//	unsigned char key[16]={0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10}; // 密钥 
+    unsigned char iv[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; 
+	sm4_context context;
+	sm4_context* ctx=&context;
+	unsigned long RK[32];//轮密钥
+	unsigned int len=ONE_LEN;
+	unsigned int *length=&len;//明文长度
+
+  
+	sm4_setkey_dec(ctx,key);
+	
+	sm4_crypt_cbc( ctx, ctx->mode,length, iv,input, output);
+
+	return 0;
+	
 }
