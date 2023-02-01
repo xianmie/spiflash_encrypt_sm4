@@ -7,7 +7,7 @@
 #define SM4_ENCRYPT     1
 #define SM4_DECRYPT     0
 #include "sm2.h"
-
+#include "sys.h"
 /**
  * \brief          SM4 context structure
  */
@@ -78,12 +78,12 @@ void sm4_crypt_ecb( sm4_context *ctx, int mode, unsigned int *length, \
  */
 void sm4_crypt_cbc( sm4_context *ctx,int mode,unsigned int *length, unsigned char iv[16], \
                     unsigned char *input,unsigned char *output );
-int sm4_test_ecb(TEXT *tx);
-int sm4_test_cbc(TEXT *tx);
-int sm4_encrypt_ecb(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent);
-int sm4_encrypt_cbc(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent);
-int sm4_decrypt_ecb(unsigned char *key,unsigned char *input,unsigned char *output);
-int sm4_decrypt_cbc(unsigned char *key,unsigned char *input,unsigned char *output);
+int sm4_test_ecb(TEXT *tx,u16 len);
+int sm4_test_cbc(TEXT *tx,u16 len);
+int sm4_encrypt_ecb(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent,u16 len);
+int sm4_encrypt_cbc(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent,u16 len);
+int sm4_decrypt_ecb(unsigned char *key,unsigned char *input,unsigned char *output,u16 len);
+int sm4_decrypt_cbc(unsigned char *key,unsigned char *input,unsigned char *output,u16 len,u8 flag);
 #ifdef __cplusplus
 }
 #endif

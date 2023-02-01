@@ -17,18 +17,20 @@
 
  				 	
 //要写入到W25Q64的字符串数组
-#define ONE_LEN 4096
+#define ONE_LEN1 4096
+#define ONE_LEN2 16
  int main(void)
  {	 
 	u8 key;
 	u32 FLASH_SIZE; 
     u16 id = 0;
+	u8 flagAddr;
 	TEXT plaintemp;//明文
 
 	unsigned char sm4key[16];
-	unsigned char cipher[ONE_LEN];
-	unsigned char datatemp[ONE_LEN];
-	unsigned char outplain[ONE_LEN];
+	unsigned char cipher[ONE_LEN1];
+	unsigned char datatemp[ONE_LEN2+16];
+	unsigned char outplain[ONE_LEN2];
      
 	delay_init();	    	 //延时函数初始化	  
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置中断优先级分组为组2：2位抢占优先级，2位响应优先级
@@ -68,21 +70,31 @@
 				}
 			}
 
-			sm4_encrypt_cbc(sm4key,plaintemp.content,cipher);
+			sm4_encrypt_cbc(sm4key,plaintemp.content,cipher,ONE_LEN1);
 //			printf("The Data encrypted Is:  ");	
 //			PrintBuf(cipher,ONE_LEN);			
-			W25QXX_Write((u8*)cipher,0,ONE_LEN);	//从第0个地址处开始,写入ONE_LEN长度的数据
+			W25QXX_Write((u8*)cipher,0,ONE_LEN1);	//从第0个地址处开始,写入ONE_LEN长度的数据
 			printf("W25Q128 Write Finished!\r\n");	//提示传送完成
 		}
 		if(key==KEY0_PRES)	//KEY0按下,读取字符串并显示
 		{
  			printf("Start Read W25Q128.... \r\n");
-			W25QXX_Read(datatemp,0,ONE_LEN);	//从第0个地址处开始,读出ONE_LEN个字节			
+			int readAdrr=16;
+			if(readAdrr!=0)
+			{
+				W25QXX_Read(datatemp,readAdrr-16,ONE_LEN2+16);	//从第0个地址处开始,读出ONE_LEN个字节			
+				flagAddr=1;
+			}
+			else
+			{			
+				W25QXX_Read(datatemp,readAdrr,ONE_LEN2);
+				flagAddr=0;
+			}
 //			printf("The Data Readed Is:  ");	//提示传送完成
 //			PrintBuf(datatemp,ONE_LEN);
-			sm4_decrypt_cbc(sm4key,datatemp,outplain);
+			sm4_decrypt_cbc(sm4key,datatemp,outplain,ONE_LEN2,flagAddr);
 			printf("The Data After Decrypt Is:  ");	
-			PrintBuf(outplain,ONE_LEN);			
+			PrintBuf(outplain,ONE_LEN2);			
 		}	   
 	}
 }

@@ -171,9 +171,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>80</LineNumber>
+          <LineNumber>83</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218488</Address>
+          <Address>134218498</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -182,14 +182,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>C:\Users\young\Documents\STM32_Project\瀹為獙24 SPI瀹為獙\USER\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\SPI\main.c\83</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>85</LineNumber>
+          <LineNumber>95</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218504</Address>
+          <Address>134218528</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -198,14 +198,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>C:\Users\young\Documents\STM32_Project\瀹為獙24 SPI瀹為獙\USER\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\SPI\main.c\95</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>89</LineNumber>
+          <LineNumber>96</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134218532</Address>
+          <Address>134218544</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -214,23 +214,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>C:\Users\young\Documents\STM32_Project\瀹為獙24 SPI瀹為獙\USER\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>76</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134218456</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>C:\Users\young\Documents\STM32_Project\瀹為獙24 SPI瀹為獙\USER\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\SPI\main.c\96</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
