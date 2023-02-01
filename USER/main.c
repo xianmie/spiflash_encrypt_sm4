@@ -17,7 +17,7 @@
 
  				 	
 //要写入到W25Q64的字符串数组
-#define ONE_LEN 4096 
+#define ONE_LEN 4096
  int main(void)
  {	 
 	u8 key;
@@ -26,7 +26,6 @@
 	TEXT plaintemp;//明文
 
 	unsigned char sm4key[16];
-	unsigned char plain[ONE_LEN];
 	unsigned char cipher[ONE_LEN];
 	unsigned char datatemp[ONE_LEN];
 	unsigned char outplain[ONE_LEN];
@@ -36,7 +35,6 @@
 	uart_init(115200);	 	//串口初始化为115200
 	KEY_Init();				//按键初始化		 	 	
 	W25QXX_Init();			//W25QXX初始化
-	delay_ms(500);
 
 	while(1)
 	{
@@ -69,24 +67,21 @@
 					break;
 				}
 			}
-			for(u16 i=0;i<ONE_LEN;i++)
-			{
-				plain[i]=*(plaintemp.content+i);
-			}
-			sm4_encrypt_cbc(sm4key,plain,cipher);
+
+			sm4_encrypt_cbc(sm4key,plaintemp.content,cipher);
 //			printf("The Data encrypted Is:  ");	
 //			PrintBuf(cipher,ONE_LEN);			
-			W25QXX_Write((u8*)cipher,0,ONE_LEN);			//从倒数第100个地址处开始,写入SIZE长度的数据
+			W25QXX_Write((u8*)cipher,0,ONE_LEN);	//从第0个地址处开始,写入ONE_LEN长度的数据
 			printf("W25Q128 Write Finished!\r\n");	//提示传送完成
 		}
 		if(key==KEY0_PRES)	//KEY0按下,读取字符串并显示
 		{
  			printf("Start Read W25Q128.... \r\n");
-			W25QXX_Read(datatemp,0,ONE_LEN);					//从倒数第100个地址处开始,读出SIZE个字节			
+			W25QXX_Read(datatemp,0,ONE_LEN);	//从第0个地址处开始,读出ONE_LEN个字节			
 //			printf("The Data Readed Is:  ");	//提示传送完成
 //			PrintBuf(datatemp,ONE_LEN);
 			sm4_decrypt_cbc(sm4key,datatemp,outplain);
-			printf("The Data After Decrypt Is:  ");	//提示传送完成
+			printf("The Data After Decrypt Is:  ");	
 			PrintBuf(outplain,ONE_LEN);			
 		}	   
 	}

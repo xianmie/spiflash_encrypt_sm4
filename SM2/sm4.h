@@ -82,6 +82,7 @@ int sm4_test_ecb(TEXT *tx);
 int sm4_test_cbc(TEXT *tx);
 int sm4_encrypt_ecb(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent);
 int sm4_encrypt_cbc(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent);
+int sm4_decrypt_ecb(unsigned char *key,unsigned char *input,unsigned char *output);
 int sm4_decrypt_cbc(unsigned char *key,unsigned char *input,unsigned char *output);
 #ifdef __cplusplus
 }
