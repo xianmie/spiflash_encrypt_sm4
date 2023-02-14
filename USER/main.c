@@ -19,6 +19,7 @@
 //要写入到W25Q64的字符串数组
 #define ONE_LEN1 4096
 #define ONE_LEN2 16
+#define CBC 0
  int main(void)
  {	 
 	u8 key;
@@ -64,13 +65,13 @@
 				{
 					plaintemp.len=USART_RX_STA&0x3fff;//得到此次接收到的数据长度
 					plaintemp.content=USART_RX_BUF;
-//					PrintBuf(plaintemp.content, plaintemp.len);							
+					PrintBuf(plaintemp.content, plaintemp.len);							
 					USART_RX_STA=0;
 					break;
 				}
 			}
 
-			sm4_encrypt_cbc(sm4key,plaintemp.content,cipher,ONE_LEN1);
+			sm4_encrypt_ecb(sm4key,plaintemp.content,cipher,ONE_LEN1);
 //			printf("The Data encrypted Is:  ");	
 //			PrintBuf(cipher,ONE_LEN);			
 			W25QXX_Write((u8*)cipher,0,ONE_LEN1);	//从第0个地址处开始,写入ONE_LEN长度的数据
@@ -80,7 +81,7 @@
 		{
  			printf("Start Read W25Q128.... \r\n");
 			int readAdrr=16;
-			if(readAdrr!=0)
+			if(readAdrr!=0&&CBC)
 			{
 				W25QXX_Read(datatemp,readAdrr-16,ONE_LEN2+16);	//从第0个地址处开始,读出ONE_LEN个字节			
 				flagAddr=1;
@@ -92,7 +93,7 @@
 			}
 //			printf("The Data Readed Is:  ");	//提示传送完成
 //			PrintBuf(datatemp,ONE_LEN);
-			sm4_decrypt_cbc(sm4key,datatemp,outplain,ONE_LEN2,flagAddr);
+			sm4_decrypt_ecb(sm4key,datatemp,outplain,ONE_LEN2);
 			printf("The Data After Decrypt Is:  ");	
 			PrintBuf(outplain,ONE_LEN2);			
 		}	   

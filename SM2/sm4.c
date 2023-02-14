@@ -416,12 +416,12 @@ int sm4_test_ecb(TEXT *tx,u16 len)
 	unsigned char rX[len]; // 解密出的明文
 	printf("明文："); 
 	PrintBuf(tx->content, len);
-	sm4_encrypt_cbc(key,tx->content,Y,len);
+	sm4_encrypt_ecb(key,tx->content,Y,len);
 	printf("密钥：");
 	PrintBuf(key,16);
 	printf("密文：");
 	PrintBuf(Y,len);
-	sm4_decrypt_cbc( key,Y, rX ,len,0);
+	sm4_decrypt_ecb( key,Y, rX ,len);
 	printf("解密后明文：");
 	PrintBuf(rX,len);
 	return 0;
@@ -449,7 +449,6 @@ int sm4_test_cbc(TEXT *tx,u16 len)
 
 int sm4_encrypt_ecb(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent,u16 len)
 {	
-	printf("\r\n***************** SM4_encrypt_ECB *****************\r\n");
 	sm4_context context;
 	sm4_context* ctx=&context;
 	gen_key(key);//生成主密钥
@@ -460,7 +459,6 @@ int sm4_encrypt_ecb(unsigned char *key,unsigned char *txcontent,unsigned char *r
 
 int sm4_encrypt_cbc(unsigned char *key,unsigned char *txcontent,unsigned char *rxcontent,u16 len)
 {	
-	printf("\r\n***************** SM4_encrypt_CBC *****************\r\n");
 	unsigned char iv[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; 
 	sm4_context context;
 	sm4_context* ctx=&context;
@@ -471,8 +469,7 @@ int sm4_encrypt_cbc(unsigned char *key,unsigned char *txcontent,unsigned char *r
 }
 
 int sm4_decrypt_ecb(unsigned char *key,unsigned char *input,unsigned char *output,u16 len)
-{
-    printf("\r\n***************** SM4_ECB *****************\r\n");	
+{	
 	sm4_context context;
 	sm4_context* ctx=&context;
 	sm4_setkey_dec(ctx,key);//计算轮密钥
@@ -482,8 +479,6 @@ int sm4_decrypt_ecb(unsigned char *key,unsigned char *input,unsigned char *outpu
 
 int sm4_decrypt_cbc(unsigned char *key,unsigned char *input,unsigned char *output,u16 len,u8 flag)
 {
-    printf("\r\n***************** SM4_CBC *****************\r\n");	
-//	unsigned char key[16]={0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10}; // 密钥 
     unsigned char iv[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; 
 	unsigned char iv1[16];
 	sm4_context context;
